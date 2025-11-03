@@ -1,0 +1,10 @@
+Django>=5.0
+django-htmx
+channels>=4.0
+channels-redis>=4.1
+redis>=5.0
+daphne>=4.1
+django-unfold
+python-dotenv
+whitenoise
+psycopg2-binary>=2.9

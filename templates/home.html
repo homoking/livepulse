@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}LivePulse — Live Q&A + Polls{% endblock %}
+{% block content %}
+
+<section class="grid md:grid-cols-2 gap-6 items-start">
+  <div class="rounded-2xl border bg-white p-6">
+    <h1 class="text-2xl font-semibold mb-2">Live Q&A + Polls for streams</h1>
+    <p class="text-zinc-600 mb-6">Create a room, approve questions, pin top ones, and run live polls with real-time updates.</p>
+
+    <div class="space-y-5">
+      <!-- Create -->
+      <div>
+        <h2 class="font-medium mb-2">Create a room</h2>
+        <form action="{% url 'room_create' %}" method="post" class="flex gap-2">
+          {% csrf_token %}
+          <input name="title" required placeholder="e.g. Weekly AMA" class="flex-1 border rounded-lg px-3 py-2">
+          <input type="hidden" name="access_mode" value="public">
+          <button class="px-4 py-2 bg-black text-white rounded-lg">Create</button>
+        </form>
+        <p class="text-xs text-zinc-500 mt-1">You’ll get a secret host link after creation.</p>
+      </div>
+
+      <!-- Join -->
+      <div>
+        <h2 class="font-medium mb-2">Join a room</h2>
+        <form action="{% url 'join_room' %}" method="post" class="flex gap-2">
+          {% csrf_token %}
+          <input name="slug" required placeholder="room-slug…" class="flex-1 border rounded-lg px-3 py-2">
+          <button class="px-4 py-2 border rounded-lg">Join</button>
+        </form>
+        <p class="text-xs text-zinc-500 mt-1">Ask questions and upvote in the viewer page.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="rounded-2xl border bg-white p-6">
+    <h2 class="font-medium mb-3">What you can do</h2>
+    <ul class="space-y-2 text-sm text-zinc-700">
+      <li>• Realtime questions and upvotes (WebSocket)</li>
+      <li>• Host moderation: approve/reject, mark answered, pin</li>
+      <li>• Live polls with instant tallies</li>
+      <li>• Anti-spam rate limits</li>
+      <li>• Clean, shareable viewer/host links</li>
+    </ul>
+    <div class="mt-6 rounded-lg border bg-zinc-50 p-4 text-xs text-zinc-600">
+      Tip: Use <span class="font-mono">/host/&lt;slug&gt;?host=&lt;secret&gt;</span> to access the host panel the first time—then your session remembers it.
+    </div>
+  </div>
+</section>
+
+{% endblock %}

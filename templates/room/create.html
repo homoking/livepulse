@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="max-w-lg mx-auto">
+  <h1 class="text-2xl font-semibold mb-4">Create a Room</h1>
+  {% if error %}<div class="mb-3 text-red-600">{{ error }}</div>{% endif %}
+  <form method="post" class="space-y-4">
+    {% csrf_token %}
+    <label class="block">
+      <span class="text-sm">Title</span>
+      <input name="title" class="mt-1 w-full border rounded-lg px-3 py-2" required>
+    </label>
+    <label class="block">
+      <span class="text-sm">Access</span>
+      <select name="access_mode" class="mt-1 w-full border rounded-lg px-3 py-2">
+        <option value="public">Public</option>
+        <option value="private">Private</option>
+      </select>
+    </label>
+    <button class="px-4 py-2 bg-black text-white rounded-lg">Create</button>
+  </form>
+</div>
+{% endblock %}

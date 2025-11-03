@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en" hx-boost="true" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+<head>
+  {% load static %}
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>{% block title %}LivePulse{% endblock %}</title>
+
+  <!-- Tailwind via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- htmx -->
+  <script src="https://unpkg.com/htmx.org@1.9.12"></script>
+
+  <!-- Alpine (اختیاری برای توست) -->
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+</head>
+<body class="min-h-screen bg-zinc-50 text-zinc-900">
+
+  <!-- Navbar -->
+  <header class="sticky top-0 z-30 border-b bg-white/90 backdrop-blur">
+    <div class="mx-auto max-w-5xl px-4 py-3 flex items-center justify-between">
+      <a href="/" class="font-semibold">LivePulse</a>
+      <nav class="flex items-center gap-4 text-sm text-zinc-600">
+        <a href="{% url 'room_create' %}" class="hover:text-black">Create room</a>
+        <a href="/admin/" class="hover:text-black">Admin</a>
+        <a href="https://github.com/" target="_blank" class="hover:text-black">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- HTMX global indicator -->
+  <div id="hx-indicator" class="fixed top-3 right-3 hidden items-center gap-2 rounded-full bg-black/85 text-white px-3 py-1.5 text-xs">
+    <svg class="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"></circle>
+      <path class="opacity-75" d="M4 12a8 8 0 018-8" stroke="currentColor" stroke-width="3"></path>
+    </svg>
+    <span>Loading…</span>
+  </div>
+
+  <!-- Content -->
+  <main class="mx-auto max-w-5xl px-4 py-8">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t bg-white">
+    <div class="mx-auto max-w-5xl px-4 py-6 text-sm text-zinc-500 flex items-center justify-between">
+      <span>© {{ now|date:"Y" }} LivePulse</span>
+      <div class="flex items-center gap-4">
+        <a href="/" class="hover:text-black">Home</a>
+        <a href="{% url 'room_create' %}" class="hover:text-black">Create</a>
+        <a href="/admin/" class="hover:text-black">Admin</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- JS -->
+  <script src="{% static 'js/ws.js' %}"></script>
+  <script src="{% static 'js/ui.js' %}"></script>
+
+  <!-- HTMX indicator + toasts wiring -->
+  <script>
+    document.addEventListener("htmx:configRequest", (e) => {
+      const ind = document.getElementById("hx-indicator");
+      ind && ind.classList.remove("hidden");
+    });
+    document.addEventListener("htmx:afterRequest", (e) => {
+      const ind = document.getElementById("hx-indicator");
+      ind && ind.classList.add("hidden");
+      if (e.detail && e.detail.xhr && e.detail.xhr.status >= 400) {
+        window.showToast && window.showToast("Something went wrong", "error");
+      }
+    });
+    document.addEventListener("htmx:responseError", () => {
+      window.showToast && window.showToast("Request failed", "error");
+    });
+  </script>
+</body>
+</html>

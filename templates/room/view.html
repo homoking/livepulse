@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block content %}
+<span id="ws-room-slug" data-slug="{{ room.slug }}" class="hidden"></span>
+
+<div class="flex flex-col gap-6">
+
+  <!-- Room header -->
+  <div class="rounded-xl border bg-white p-5">
+    <h1 class="text-xl font-semibold">{{ room.title }}</h1>
+    <p class="text-sm text-zinc-500">Room: {{ room.slug }}</p>
+  </div>
+
+  <!-- Active Poll -->
+  <div class="rounded-xl border bg-white p-5">
+    <div id="poll-block">
+      {% if active_poll %}
+        <div class="space-y-4">
+          <div class="flex items-center justify-between">
+            <h2 class="font-semibold">Live Poll</h2>
+            <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">Active</span>
+          </div>
+
+          <div class="text-lg font-medium">{{ active_poll.question }}</div>
+
+          <!-- Vote buttons -->
+          <div class="grid gap-2">
+            {% for opt in poll_options %}
+              <form
+                hx-post="{% url 'poll_vote' slug=room.slug pk=active_poll.id option_id=opt.id %}"
+                hx-target="#poll-block"
+                hx-select="#poll-block"
+                hx-swap="outerHTML"
+                class="flex items-center gap-3"
+              >
+                {% csrf_token %}
+                <button type="submit" class="px-3 py-2 rounded bg-zinc-900 text-white text-sm">Vote</button>
+                <div class="flex-1">
+                  <div class="font-medium">{{ opt.label }}</div>
+                  <div class="text-xs text-zinc-500">Votes: {{ opt.votes }}</div>
+                </div>
+              </form>
+            {% endfor %}
+          </div>
+
+          <!-- Progress bars (ارزش width از opt.pct که در view محاسبه شده) -->
+          <div class="mt-2 space-y-2">
+            {% for opt in poll_options %}
+              <div>
+                <div class="flex justify-between text-xs text-zinc-600">
+                  <span>{{ opt.label }}</span>
+                  <span>{{ opt.votes }}</span>
+                </div>
+                <div class="w-full h-2 bg-zinc-200 rounded">
+                  <div class="h-2 bg-zinc-900 rounded w-[{{ opt.pct }}%]"></div>
+                </div>
+
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      {% else %}
+        <p class="text-zinc-500">No active poll.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Ask form -->
+  <div class="rounded-xl border bg-white p-5">
+    <h2 class="font-semibold mb-3">Ask a question</h2>
+    <div id="question-form">
+      <form
+        hx-post="{% url 'question_create' slug=room.slug %}"
+        hx-target="#question-form"
+        hx-select="#question-form"
+        hx-swap="outerHTML"
+        class="space-y-3"
+      >
+        {% csrf_token %}
+        <input name="author_name" placeholder="Your name (optional)" class="w-full border rounded-lg px-3 py-2">
+        <textarea name="body" placeholder="Type your question…" class="w-full border rounded-lg px-3 py-2" rows="3" required></textarea>
+        <button class="px-4 py-2 bg-black text-white rounded-lg">Send</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Questions list -->
+  <div class="rounded-xl border bg-white p-5">
+    <div class="flex items-center justify-between mb-3">
+      <h2 class="font-semibold">Top Questions</h2>
+    </div>
+    <div id="question-list" class="space-y-3">
+      {% for q in questions %}
+        {% include "room/_question_card.html" with q=q room=room %}
+      {% empty %}
+        <p class="text-zinc-500">No approved questions yet.</p>
+      {% endfor %}
+    </div>
+  </div>
+
+</div>
+{% endblock %}

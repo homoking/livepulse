@@ -1,0 +1,71 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual env
+.venv/
+env/
+venv/
+ENV/
+
+# Django
+db.sqlite3
+*.sqlite3
+*.log
+media/
+staticfiles/
+static_root/
+*.pot
+*.pyc
+*.pyo
+*.pyd
+.DS_Store
+
+# Migrations cache (optional)
+*/migrations/__pycache__/
+*/migrations/*.pyc
+*/migrations/*.py~
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# IDEs / Editors
+.vscode/
+.idea/
+*.iml
+
+# Node / Tailwind (if ever added)
+node_modules/
+package-lock.json
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+
+# Build / cache
+dist/
+build/
+__pypackages__/
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.cache/
+*.egg-info/
+.eggs/
+
+# OS files
+Thumbs.db
+.DS_Store
+ehthumbs.db
+Icon?
+
+# Local test artifacts
+*.swp
+*.swo
+*.bak
+*.tmp
+*.old
+*.orig

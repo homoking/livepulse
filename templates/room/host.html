@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="flex flex-col gap-6">
+
+  <div class="rounded-2xl border bg-white p-6">
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-xl font-semibold">Host Panel — {{ room.title }}</h1>
+        <p class="text-sm text-zinc-500">Room: <span class="font-mono">{{ room.slug }}</span></p>
+      </div>
+      <a href="{% url 'room_view' slug=room.slug %}" class="text-sm underline">Open viewer</a>
+    </div>
+  </div>
+
+  <!-- Share -->
+  <div class="rounded-2xl border bg-white p-6">
+    <h2 class="font-semibold mb-3">Share</h2>
+    <div class="grid md:grid-cols-2 gap-3 text-sm">
+      <div>
+        <div class="text-zinc-500 mb-1">Viewer URL</div>
+        <div class="flex gap-2">
+          <input type="text" readonly value="{{ viewer_url }}" class="flex-1 border rounded px-2 py-1 font-mono text-xs">
+          <button class="px-3 py-1 border rounded text-xs" data-copy="{{ viewer_url }}">Copy</button>
+        </div>
+      </div>
+      <div>
+        <div class="text-zinc-500 mb-1">Host URL (keep secret)</div>
+        <div class="flex gap-2">
+          <input type="text" readonly value="{{ host_url }}" class="flex-1 border rounded px-2 py-1 font-mono text-xs">
+          <button class="px-3 py-1 border rounded text-xs" data-copy="{{ host_url }}">Copy</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lists (همان نسخه‌ی ساده‌شدهٔ قبلی) -->
+  <div id="host-lists" class="grid md:grid-cols-2 gap-6">
+    <div class="rounded-xl border bg-white p-5">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="font-semibold">Pending</h2>
+      </div>
+      <div class="space-y-3">
+        {% for q in pending %}
+          <div class="border rounded-lg p-3">
+            <div class="text-xs text-zinc-500 mb-1">#{{ q.id }}</div>
+            <p class="mb-3">{{ q.body|linebreaksbr }}</p>
+            <div class="flex gap-2 text-sm">
+              <button class="px-3 py-1 rounded bg-emerald-600 text-white"
+                hx-post="{% url 'host_approve' slug=room.slug pk=q.id %}"
+                hx-target="#host-lists" hx-select="#host-lists" hx-swap="outerHTML">Approve</button>
+              <button class="px-3 py-1 rounded bg-red-600 text-white"
+                hx-post="{% url 'host_reject' slug=room.slug pk=q.id %}"
+                hx-target="#host-lists" hx-select="#host-lists" hx-swap="outerHTML">Reject</button>
+            </div>
+          </div>
+        {% empty %}
+          <p class="text-zinc-500">Nothing pending.</p>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="rounded-xl border bg-white p-5">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="font-semibold">Approved / Answered</h2>
+      </div>
+      <div class="space-y-3">
+        {% for q in approved %}
+          <div class="border rounded-lg p-3">
+            <div class="text-xs text-zinc-500 mb-1">#{{ q.id }}{% if q.is_pinned %} • <span class="text-amber-600">Pinned</span>{% endif %}</div>
+            <p class="mb-3">{{ q.body|linebreaksbr }}</p>
+            <div class="flex flex-wrap items-center gap-2 text-sm">
+              <span class="text-zinc-600">Score: {{ q.score_cached }}</span>
+              <button class="px-3 py-1 rounded bg-blue-600 text-white"
+                hx-post="{% url 'host_answer' slug=room.slug pk=q.id %}"
+                hx-target="#host-lists" hx-select="#host-lists" hx-swap="outerHTML">Mark answered</button>
+              {% if q.is_pinned %}
+                <button class="px-3 py-1 rounded bg-zinc-800 text-white"
+                  hx-post="{% url 'host_unpin' slug=room.slug pk=q.id %}"
+                  hx-target="#host-lists" hx-select="#host-lists" hx-swap="outerHTML">Unpin</button>
+              {% else %}
+                <button class="px-3 py-1 rounded bg-amber-600 text-white"
+                  hx-post="{% url 'host_pin' slug=room.slug pk=q.id %}"
+                  hx-target="#host-lists" hx-select="#host-lists" hx-swap="outerHTML">Pin</button>
+              {% endif %}
+            </div>
+          </div>
+        {% empty %}
+          <p class="text-zinc-500">No approved questions yet.</p>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick add -->
+  <div class="rounded-xl border bg-white p-5">
+    <h2 class="font-semibold mb-3">Quick add (test as viewer)</h2>
+    <form
+      hx-post="{% url 'question_create' slug=room.slug %}"
+      hx-target="#host-lists" hx-select="#host-lists" hx-swap="outerHTML"
+    >
+      {% csrf_token %}
+      <textarea name="body" class="w-full border rounded-lg px-3 py-2 mb-2" rows="2" placeholder="Quick question…"></textarea>
+      <button class="px-3 py-1 rounded bg-black text-white">Add to pending</button>
+    </form>
+  </div>
+
+  <!-- Polls controls -->
+  <div class="rounded-2xl border bg-white p-6">
+    <h2 class="font-semibold mb-3">Polls</h2>
+    <form
+      hx-post="{% url 'poll_create' slug=room.slug %}"
+      hx-target="#polls-host" hx-select="#polls-host" hx-swap="outerHTML"
+      class="grid md:grid-cols-3 gap-3"
+    >
+      {% csrf_token %}
+      <input name="question" placeholder="Poll question" required class="border rounded px-3 py-2 md:col-span-1">
+      <textarea name="options" rows="1" placeholder="Option A&#10;Option B" required class="border rounded px-3 py-2 md:col-span-1"></textarea>
+      <button class="px-3 py-2 rounded bg-black text-white md:col-span-1">Create & activate</button>
+    </form>
+    <div id="polls-host" class="mt-4 space-y-3">
+      {% for p in polls %}
+        <div class="border rounded p-3 flex items-center justify-between">
+          <div>
+            <div class="font-medium">{{ p.question }}</div>
+            <div class="text-xs text-zinc-500">Total votes: {{ p.total_votes_cached }}</div>
+          </div>
+          <button
+            class="px-3 py-1 rounded text-white {% if p.is_active %}bg-zinc-800{% else %}bg-emerald-600{% endif %}"
+            hx-post="{% url 'poll_toggle' slug=room.slug pk=p.id %}"
+            hx-target="#polls-host" hx-select="#polls-host" hx-swap="outerHTML"
+          >{% if p.is_active %}Close{% else %}Activate{% endif %}</button>
+        </div>
+      {% empty %}
+        <p class="text-zinc-500">No polls yet.</p>
+      {% endfor %}
+    </div>
+  </div>
+
+</div>
+{% endblock %}
